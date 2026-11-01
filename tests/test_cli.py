@@ -8,10 +8,10 @@ import tempfile
 binary = pathlib.Path(sys.argv[1]).resolve()
 with tempfile.TemporaryDirectory(prefix='rescateusb-cli-') as temp:
     root = pathlib.Path(temp)
-    image = bytearray(512)
-    image[446] = 0
-    image[454:458] = (1).to_bytes(4, 'little')
-    image[458:462] = (1).to_bytes(4, 'little')
+    image = bytearray(1024)
+    image[446 + 4] = 0x83
+    image[446 + 8:446 + 12] = (1).to_bytes(4, 'little')
+    image[446 + 12:446 + 16] = (1).to_bytes(4, 'little')
     image[510:512] = b'\x55\xaa'
     image_path = root / 'disk image "test".img'
     image_path.write_bytes(image)
