@@ -13,7 +13,7 @@ with tempfile.TemporaryDirectory(prefix='rescateusb-cli-') as temp:
     image[446 + 8:446 + 12] = (1).to_bytes(4, 'little')
     image[446 + 12:446 + 16] = (1).to_bytes(4, 'little')
     image[510:512] = b'\x55\xaa'
-    image_path = root / 'disk image "test".img'
+    image_path = root / 'disk image test.img'
     image_path.write_bytes(image)
     expected = hashlib.sha256(image).hexdigest()
     report_path = root / 'report.json'
