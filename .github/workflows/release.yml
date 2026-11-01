@@ -27,6 +27,7 @@ jobs:
         run: |
           if [ "${{ runner.os }}" = "Windows" ]; then BIN=build/Release/rescateusb.exe; else BIN=build/rescateusb; fi
           "$BIN" --self-test
+          ctest --test-dir build -C Release --output-on-failure
           if [ "${{ runner.os }}" = "Windows" ]; then cp "$BIN" rescateusb-windows-x86_64.exe; else cp "$BIN" rescateusb-linux-x86_64; fi
       - uses: actions/upload-artifact@v4
         with:

@@ -7,6 +7,7 @@ Herramienta de consola para diagnosticar **archivos de imagen** de memorias/disc
 - Calcula SHA-256 de la imagen y permite compararlo con un hash esperado.
 - Detecta MBR: firma, indicadores de arranque y límites de particiones.
 - Detecta GPT y valida CRC32 de encabezado y tabla, copia primaria/secundaria, consistencia de metadatos, límites y solapamientos de particiones.
+- Emite resultados en texto o JSON para automatizar diagnósticos y comparar hashes.
 - Compila para Linux y Windows con C++17 y CMake.
 
 ## Compilar y usar
@@ -19,6 +20,8 @@ cmake --build build --parallel
 ./build/rescateusb --self-test
 ./build/rescateusb imagen-usb.img
 ./build/rescateusb imagen-usb.img --expected-sha256 HASH_DE_64_CARACTERES
+./build/rescateusb imagen-usb.img --json --expected-sha256 HASH_DE_64_CARACTERES
+./build/rescateusb --self-test
 ```
 
 En Windows ejecuta `build/Release/rescateusb.exe`.
@@ -32,7 +35,7 @@ En Windows ejecuta `build/Release/rescateusb.exe`.
 
 ## GitHub Releases
 
-Cada etiqueta `v*` activa el workflow: compila y prueba Linux x86_64 y Windows x86_64, y publica ambos ejecutables en una GitHub Release.
+Cada etiqueta `v*` activa el workflow: compila y prueba Linux x86_64 y Windows x86_64, y publica ambos ejecutables en una GitHub Release. El self-test cubre vectores SHA-256 conocidos, MBR y GPT con copia secundaria.
 
 ## Alcance y precauciones
 
