@@ -42,8 +42,8 @@ jobs:
           path: release-assets
           merge-multiple: true
       - name: Create release and upload binaries
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
-        run: |
-          gh release create "$TAG" release-assets/* --title "Rescate USB $TAG" --generate-notes
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Rescate USB ${{ github.ref_name }}
+          generate_release_notes: true
+          files: release-assets/*
