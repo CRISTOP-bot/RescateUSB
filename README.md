@@ -1,42 +1,37 @@
 # Rescate USB
 
-Herramienta de consola para diagnosticar **archivos de imagen** de memorias/discos USB en modo de solo lectura. No modifica la imagen ni escribe en dispositivos físicos.
+Diagnóstico **de solo lectura** para archivos de imagen de discos o memorias USB. No abre dispositivos físicos ni modifica la imagen.
 
 ## Funciones
 
-- Calcula SHA-256 de la imagen y permite compararlo con un hash esperado.
-- Detecta MBR: firma, indicadores de arranque y límites de particiones.
-- Detecta GPT y valida CRC32 de encabezado y tabla, copia primaria/secundaria, consistencia de metadatos, límites y solapamientos de particiones.
-- Emite resultados en texto o JSON para automatizar diagnósticos y comparar hashes.
-- Compila para Linux y Windows con C++17 y CMake.
+- SHA-256 del archivo y comparación con hash esperado.
+- MBR: firma, flags, límites y particiones solapadas.
+- GPT: CRC de cabeceras y tabla, coherencia de las copias primaria/secundaria, límites y solapamientos.
+- Salida JSON por stdout o a un archivo; modo `--debug` envía trazas a stderr.
+- Builds y tests en Linux y Windows por GitHub Actions.
 
-## Compilar y usar
+## Compilar
 
-Requiere CMake 3.16+ y un compilador C++17.
+Requisitos: CMake 3.16+, C++17 y Python 3 para la prueba de integración de CLI.
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
-./build/rescateusb --self-test
-./build/rescateusb imagen-usb.img
-./build/rescateusb imagen-usb.img --expected-sha256 HASH_DE_64_CARACTERES
-./build/rescateusb imagen-usb.img --json --expected-sha256 HASH_DE_64_CARACTERES
-./build/rescateusb --self-test
+ctest --test-dir build --output-on-failure
+./build/rescateusb imagen.img
+./build/rescateusb imagen.img --json
+./build/rescateusb imagen.img --json-out reporte.json --expected-sha256 HASH --debug
 ```
 
 En Windows ejecuta `build/Release/rescateusb.exe`.
 
-## Códigos de salida
+## Código de salida
 
-- `0`: tabla reconocida como válida o self-test aprobado.
-- `1`: estructura no reconocida o inválida.
-- `2`: error de argumentos o lectura.
-- `3`: SHA-256 distinto del esperado.
+- `0`: estructura válida y hash (si se indicó) coincidente.
+- `1`: imagen sin tabla reconocida o con estructura no válida.
+- `2`: argumentos o error de entrada/salida.
+- `3`: el SHA-256 no coincide con el esperado.
 
-## GitHub Releases
+## Seguridad y límites
 
-Cada etiqueta `v*` activa el workflow: compila y prueba Linux x86_64 y Windows x86_64, y publica ambos ejecutables en una GitHub Release. El self-test cubre vectores SHA-256 conocidos, MBR y GPT con copia secundaria.
-
-## Alcance y precauciones
-
-Procesa archivos de imagen; no detecta medios físicos, no repara ni recupera archivos y no valida sistemas de archivos. Una tabla de particiones válida no garantiza la integridad de todos los datos. Conserva una copia de seguridad antes de intentar cualquier recuperación.
+Esta herramienta solo recibe rutas de archivos. No repara ni recupera datos, no verifica sistemas de archivos y no analiza dispositivos USB físicos. “Válido” significa únicamente que las comprobaciones de tabla soportadas pasaron; no demuestra que los datos estén íntegros o recuperables. Trabaja sobre una copia, conserva el original y no ejecutes herramientas de reparación sobre el medio original.
