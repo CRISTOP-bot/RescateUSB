@@ -1,0 +1,49 @@
+name: Build and release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: rescateusb-linux-x86_64
+          - os: windows-latest
+            artifact: rescateusb-windows-x86_64.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure and build
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Compile
+        run: cmake --build build --config Release --parallel
+      - name: Test binary
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then BIN=build/Release/rescateusb.exe; else BIN=build/rescateusb; fi
+          "$BIN" --self-test
+          if [ "${{ runner.os }}" = "Windows" ]; then cp "$BIN" rescateusb-windows-x86_64.exe; else cp "$BIN" rescateusb-linux-x86_64; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Create release and upload binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" release-assets/* --title "Rescate USB $TAG" --generate-notes
